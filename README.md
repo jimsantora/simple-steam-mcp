@@ -1,6 +1,8 @@
 # Steam Library MCP Server
 
-A Model Context Protocol (MCP) server that provides access to your Steam game library data through Claude Desktop.
+A Model Context Protocol (MCP) server that provides access to your Steam game library data through Claude Desktop. It includes a helper script to copy your library data locally to a csv file for the MCP server to ingest. 
+
+This repo was developed with Claude Code, and I left Claude's config in here for reference. This was built simply as a learning experience and an example of how to create an MCP server. 
 
 ## Features
 
