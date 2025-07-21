@@ -12,6 +12,14 @@ A Model Context Protocol (MCP) server that provides access to your Steam game li
 - **Recently Played**: See what you've been playing lately
 - **Recommendations**: Get game suggestions based on your playtime patterns
 
+## Example Interactions using Claude Desktop
+
+<details open>
+<summary>![Recent Games Question](/images/recent_games_question.png)</summary>
+<br>
+![Recent Games Answer](/images/recent_games_answer.png)
+</details>
+
 ## Prerequisites
 
 - Python 3.8 or higher
