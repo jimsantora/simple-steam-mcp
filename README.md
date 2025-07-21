@@ -15,19 +15,31 @@ A Model Context Protocol (MCP) server that provides access to your Steam game li
 ## Example Interactions using Claude Desktop
 
 <details>
-<summary>&nbsp;&nbsp;&nbsp;<img src="images/recent_games_question.png" style="cursor:pointer;" /></summary>
+<summary>&nbsp;&nbsp;&nbsp;
+  <span>
+    <img src="images/recent_games_question.png" style="cursor:pointer;" draggable="false" />
+  </span>
+</summary>
 <br>
 <img src="images/recent_games_answer.png" />
 </details>
 
 <details>
-<summary>&nbsp;&nbsp;&nbsp;<img src="images/game_suggestion_question.png" style="cursor:pointer;" /></summary>
+<summary>&nbsp;&nbsp;&nbsp;
+  <span>
+    <img src="images/game_suggestion_question.png" style="cursor:pointer;" draggable="false" />
+  </span>
+</summary>
 <br>
 <img src="images/game_suggestion_answer.png" />
 </details>
 
 <details>
-<summary>&nbsp;&nbsp;&nbsp;<img src="images/game_sharing_calendar_question.png" style="cursor:pointer;" /></summary>
+<summary>&nbsp;&nbsp;&nbsp;
+  <span>
+    <img src="images/game_sharing_calendar_question.png" style="cursor:pointer;" draggable="false" />
+  </span>
+</summary>
 <br>
 <img src="images/game_sharing_calendar_answer.png" />
 </details>
