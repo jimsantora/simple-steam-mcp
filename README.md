@@ -12,34 +12,22 @@ A Model Context Protocol (MCP) server that provides access to your Steam game li
 - **Recently Played**: See what you've been playing lately
 - **Recommendations**: Get game suggestions based on your playtime patterns
 
-## Example Interactions using Claude Desktop
+## Example Interactions using Claude Desktop (Click the dropdowns to see responses)
 
 <details>
-<summary>&nbsp;&nbsp;&nbsp;
-  <span>
-    <img src="images/recent_games_question.png" style="cursor:pointer;" draggable="false" />
-  </span>
-</summary>
+<summary>Suggest games based on recent play history<br><img src="images/recent_games_question.png" style="cursor:pointer;" /></summary>
 <br>
 <img src="images/recent_games_answer.png" />
 </details>
 
 <details>
-<summary>&nbsp;&nbsp;&nbsp;
-  <span>
-    <img src="images/game_suggestion_question.png" style="cursor:pointer;" draggable="false" />
-  </span>
-</summary>
+<summary>Suggest games based on review scores and age ratings<br><img src="images/game_suggestion_question.png" style="cursor:pointer;" /></summary>
 <br>
 <img src="images/game_suggestion_answer.png" />
 </details>
 
 <details>
-<summary>&nbsp;&nbsp;&nbsp;
-  <span>
-    <img src="images/game_sharing_calendar_question.png" style="cursor:pointer;" draggable="false" />
-  </span>
-</summary>
+<summary>Generate a calendar timeline following several rules of games to share over time<br><img src="images/game_sharing_calendar_question.png" style="cursor:pointer;" /></summary>
 <br>
 <img src="images/game_sharing_calendar_answer.png" />
 </details>
