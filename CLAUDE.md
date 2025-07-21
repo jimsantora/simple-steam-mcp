@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Steam Library MCP (Model Context Protocol) server that provides access to Steam game library data through Claude Desktop. The project is built using FastMCP, a Pythonic framework for building MCP servers.
+This is a fully functional Steam Library MCP (Model Context Protocol) server that provides access to Steam game library data through Claude Desktop. The project is built using FastMCP and provides 7 tools for interacting with Steam library data.
 
 ## Key Commands
 
@@ -13,55 +13,67 @@ This is a Steam Library MCP (Model Context Protocol) server that provides access
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the MCP server (for testing)
+# Run the MCP server (uses STDIO transport for Claude Desktop)
 python mcp_server.py
 
-# Run the Steam library data fetcher
+# Fetch fresh Steam library data (requires .env with STEAM_ID and STEAM_API_KEY)
 python steam_library_fetcher.py
 ```
 
-### Development Commands
-This is a Python project without traditional build/test/lint commands. Key development tasks:
-- Ensure all dependencies are installed via `pip install -r requirements.txt`
-- Test the server by running `python mcp_server.py`
-- The server runs on `http://0.0.0.0:8000/sse` by default
+### Configuration
+```bash
+# Create configuration from example
+cp claude_desktop_config.example.json claude_desktop_config.json
+# Edit paths in claude_desktop_config.json to match your system
+# Copy to Claude Desktop location (macOS): ~/Library/Application Support/Claude/claude_desktop_config.json
+```
 
 ## Architecture & Structure
 
 ### Core Components
 
-1. **mcp_server.py**: Main MCP server implementation using FastMCP
-   - Currently a simple example server with basic tools (hello_world, add_numbers, get_current_time)
-   - Entry point for the MCP server when integrated with Claude Desktop
+1. **mcp_server.py**: Fully functional MCP server with 7 Steam library tools
+   - Loads `steam_library.csv` at startup using pandas
+   - Converts playtime from minutes to hours for readability
+   - Uses STDIO transport (not HTTP) for Claude Desktop integration
+   - **CRITICAL**: Never print to stdout during operation as it breaks STDIO protocol
 
 2. **steam_library_fetcher.py**: Steam API data fetcher
-   - Fetches detailed game information from Steam API
-   - Requires `STEAM_ID` and `STEAM_API_KEY` environment variables
-   - Outputs data to `steam_library.csv`
+   - Fetches comprehensive game data from Steam API
+   - Requires `.env` file with `STEAM_ID` and `STEAM_API_KEY`
+   - Outputs to `steam_library.csv`
 
-3. **steam_library.csv**: Data source for the MCP server
-   - Contains columns: appid, name, maturity_rating, review_summary, review_score, total_reviews, positive_reviews, negative_reviews, genres, categories, developers, publishers, release_date, playtime_forever, playtime_2weeks, rtime_last_played
+3. **steam_library.csv**: Primary data source (not in git due to .gitignore)
+   - 18 columns including playtime, reviews, genres, developers, publishers
+   - Handles "Never" for rtime_last_played dates
 
-### MCP Server Integration
+### Implemented MCP Tools
 
-The server needs to be configured in Claude Desktop's configuration file:
-- **macOS/Linux**: `~/.config/claude/claude_desktop_config.json`
-- **Windows**: `%APPDATA%\claude\claude_desktop_config.json`
+1. **search_games**: Case-insensitive partial search across name, genres, developers, publishers
+2. **filter_games**: Filter by playtime range, review summary, maturity rating
+3. **get_game_details**: Get full game details by name or appid (supports partial matching)
+4. **get_game_reviews**: Get review statistics including calculated positive percentage
+5. **get_library_stats**: Structured dict with totals, top genres/developers, review distribution
+6. **get_recently_played**: Games with playtime_2weeks > 0, sorted by recent playtime
+7. **get_recommendations**: Personalized suggestions with reasons based on favorite genres/developers
 
-### Available MCP Tools (as described in README)
+### Configuration Files
 
-The server should implement these tools for Steam library interaction:
-1. `search_games`: Search by name, genre, developer, publisher, review summary, or maturity rating
-2. `filter_games`: Filter by playtime thresholds, review summary, or maturity rating
-3. `get_game_details`: Get comprehensive info about a specific game
-4. `get_game_reviews`: Get detailed review statistics
-5. `get_library_stats`: Overview statistics of the library
-6. `get_recently_played`: Games played in the last 2 weeks
-7. `get_recommendations`: Personalized suggestions based on playtime
+- **claude_desktop_config.example.json**: Template for users to customize
+- **claude_desktop_config.json**: Personal config (gitignored)
+- **.env**: Steam API credentials (gitignored)
 
-## Important Notes
+## Important Development Notes
 
-- The current `mcp_server.py` is a minimal example and needs to be extended with the Steam library functionality
-- Data processing should use pandas for efficient CSV handling
-- The server uses FastMCP framework with FastAPI for web transport and SSE
-- Environment variables for Steam API access should be stored in a `.env` file
+- **STDIO Protocol**: Never use `print()` statements in mcp_server.py as they interfere with Claude Desktop communication
+- **Data Loading**: CSV is loaded once at startup with absolute paths to avoid working directory issues
+- **Error Handling**: Tools return empty lists/None for missing data rather than raising exceptions
+- **Performance**: Data is cached in memory after CSV load for fast tool responses
+- **Path Resolution**: Uses `os.path.abspath(__file__)` to find CSV regardless of working directory
+
+## Claude Desktop Integration
+
+- Server name: "steam-library-mcp"
+- Transport: STDIO (not HTTP/SSE)
+- Config location (macOS): `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Requires restart of Claude Desktop after config changes
