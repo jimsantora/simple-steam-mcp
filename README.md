@@ -82,7 +82,7 @@ Edit `claude_desktop_config.json` and update the paths to match your system:
   "mcpServers": {
     "Steam Library": {
       "command": "/path/to/your/python",
-      "args": ["/path/to/your/steam-mcp/mcp_server.py"],
+      "args": ["/path/to/your/simple-steam-mcp/mcp_server.py"],
       "env": {}
     }
   }

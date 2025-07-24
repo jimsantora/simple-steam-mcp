@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Steam Library Data Fetcher using python-steam-api
+Steam Library Data Fetcher using Steam's 1st party web api as well as their 
+unofficial store api for game details. All api requests go directly to Valve/Steam servers.
 
 Fetches detailed information about games in a Steam user's library including:
 - Game details (name, appid)
@@ -26,7 +27,6 @@ from datetime import datetime
 import logging
 from typing import Dict, List, Optional, Any
 from dotenv import load_dotenv
-from steam_web_api import Steam
 import requests
 
 # Set up logging
@@ -35,11 +35,10 @@ logger = logging.getLogger(__name__)
 
 class SteamLibraryFetcher:
     def __init__(self, api_key: str):
-        self.steam = Steam(api_key)
         self.api_key = api_key
-        self.store_session = requests.Session()
-        # Add headers for store API requests
-        self.store_session.headers.update({
+        self.session = requests.Session()
+        # Add headers for API requests
+        self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             'Accept': 'application/json',
             'Accept-Language': 'en-US,en;q=0.9',
@@ -56,19 +55,40 @@ class SteamLibraryFetcher:
         self.last_api_call = time.time()
         
     def get_owned_games(self, steam_id: str) -> List[Dict]:
-        """Get list of games owned by the user using python-steam-api"""
+        """Get list of games owned by the user using direct Steam Web API"""
         logger.info("Fetching owned games...")
         
         try:
-            # Get user's games with app info
-            games_response = self.steam.users.get_owned_games(steam_id)
+            # Direct call to IPlayerService/GetOwnedGames
+            url = "http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/"
+            params = {
+                'key': self.api_key,
+                'steamid': steam_id,
+                'include_appinfo': True,
+                'include_played_free_games': True,
+                'format': 'json'
+            }
             
-            if 'games' in games_response:
-                games = games_response['games']
-                logger.info(f"Found {len(games)} games in library")
-                return games
+            logger.debug(f"Request URL: {url}")
+            logger.debug(f"Request params: {params}")
+            
+            response = self.session.get(url, params=params, timeout=30)
+            
+            logger.debug(f"Full request URL: {response.url}")
+            logger.debug(f"Response headers: {response.headers}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'response' in data and 'games' in data['response']:
+                    games = data['response']['games']
+                    logger.info(f"Found {len(games)} games in library")
+                    return games
+                else:
+                    logger.error("No games found in response")
+                    return []
             else:
-                logger.error("Failed to fetch owned games")
+                logger.error(f"Steam API returned {response.status_code}")
+                logger.error(f"Response: {response.text}")
                 return []
                 
         except Exception as e:
@@ -87,7 +107,7 @@ class SteamLibraryFetcher:
         }
         
         try:
-            response = self.store_session.get(url, params=params, timeout=30)
+            response = self.session.get(url, params=params, timeout=30)
             
             if response.status_code == 200:
                 data = response.json()
@@ -117,7 +137,7 @@ class SteamLibraryFetcher:
                 'num_per_page': '0'
             }
             
-            response = self.store_session.get(url, params=params, timeout=30)
+            response = self.session.get(url, params=params, timeout=30)
             
             if response.status_code == 200:
                 data = response.json()
@@ -144,7 +164,6 @@ class SteamLibraryFetcher:
             'name': name,
             'playtime_forever': game.get('playtime_forever', 0),
             'playtime_2weeks': game.get('playtime_2weeks', 0),
-            'rtime_last_played': datetime.fromtimestamp(game.get('rtime_last_played', 0)).strftime('%Y-%m-%d %H:%M:%S') if game.get('rtime_last_played', 0) > 0 else 'Never',
             'maturity_rating': 'Unknown',
             'required_age': 0,
             'content_descriptors': '',
@@ -222,7 +241,7 @@ class SteamLibraryFetcher:
             'appid', 'name', 'maturity_rating', 'required_age', 'content_descriptors',
             'review_summary', 'review_score', 'total_reviews', 'positive_reviews', 
             'negative_reviews', 'genres', 'categories', 'developers', 'publishers',
-            'release_date', 'playtime_forever', 'playtime_2weeks', 'rtime_last_played'
+            'release_date', 'playtime_forever', 'playtime_2weeks'
         ]
         
         mode = 'w' if write_header else 'a'
@@ -274,7 +293,6 @@ class SteamLibraryFetcher:
                     'name': game.get('name', 'Unknown'),
                     'playtime_forever': game.get('playtime_forever', 0),
                     'playtime_2weeks': game.get('playtime_2weeks', 0),
-                    'rtime_last_played': datetime.fromtimestamp(game.get('rtime_last_played', 0)).strftime('%Y-%m-%d %H:%M:%S') if game.get('rtime_last_played', 0) > 0 else 'Never',
                     'maturity_rating': 'Unknown',
                     'required_age': 0,
                     'content_descriptors': '',
@@ -300,6 +318,11 @@ class SteamLibraryFetcher:
 def main():
     # Load environment variables from .env file
     load_dotenv()
+    
+    # Check for debug flag
+    debug = '--debug' in sys.argv
+    if debug:
+        logging.getLogger().setLevel(logging.DEBUG)
     
     # Get environment variables
     steam_id = os.getenv('STEAM_ID')

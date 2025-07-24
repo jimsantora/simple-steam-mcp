@@ -8,7 +8,7 @@ import pandas as pd
 from fastmcp import FastMCP
 
 # Create the server instance
-mcp = FastMCP("steam-library-mcp")
+mcp = FastMCP("simple-steam-mcp")
 
 # Load the Steam library data at startup
 # Use absolute path to ensure CSV is found regardless of working directory
@@ -19,8 +19,6 @@ try:
     # Convert playtime from minutes to hours
     df['playtime_forever_hours'] = df['playtime_forever'] / 60
     df['playtime_2weeks_hours'] = df['playtime_2weeks'] / 60
-    # Handle "Never" dates
-    df['rtime_last_played'] = pd.to_datetime(df['rtime_last_played'], errors='coerce')
     # Don't print to stdout as it interferes with STDIO protocol
     pass
 except Exception as e:
@@ -175,7 +173,7 @@ def get_recently_played() -> List[Dict[str, Any]]:
     recent = df[df['playtime_2weeks'] > 0].copy()
     recent = recent.sort_values('playtime_2weeks', ascending=False)
     
-    results = recent[['appid', 'name', 'playtime_2weeks_hours', 'playtime_forever_hours', 'rtime_last_played']].to_dict('records')
+    results = recent[['appid', 'name', 'playtime_2weeks_hours', 'playtime_forever_hours']].to_dict('records')
     return results
 
 @mcp.tool
